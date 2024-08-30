@@ -6,8 +6,8 @@ on:
 
 env:
   project: aliyun-rest
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: registry.cn-shanghai.aliyuncs.com
+  IMAGE_NAME: dysh/mirror
 
 jobs:
   build-image:
@@ -20,23 +20,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
       - name: Login to aliyun
         uses: aliyun/acr-login@v1
         with:
-          login-server: 'registry.cn-shanghai.aliyuncs.com'
+          login-server: '${{ env.REGISTRY }}'
           username: 'docloud'
           password: '${{ secrets.REGISTRY_PASSWORD }}'
 
       - name: build & push to aliyun
         run: |
-          docker build -t registry.cn-shanghai.aliyuncs.com/dysh/mirror:${{ env.project }} .
-          docker push registry.cn-shanghai.aliyuncs.com/dysh/mirror:${{ env.project }}
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.project }} .
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.project }}
 
-      - name: "Trigger deploy webhook"
-        run: curl -s "${{ secrets.DEPLOY_WEBHOOK_URL }}"
+      - name: Dispatch deploy event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: deploy
+          repository: joy2fun/deploy
+          token: ${{ secrets.PAT }}
+          client-payload: |-
+            {
+              "host": "w1",
+              "project": "${{ env.project }}",
+              "type": ""
+            }
