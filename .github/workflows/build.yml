@@ -20,14 +20,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - uses: "shivammathur/setup-php@v2"
-        with:
-          php-version: "8.3"
-
-      - uses: "ramsey/composer-install@v3"
-        with:
-          composer-options: "--ignore-platform-reqs -n --no-dev --no-progress --optimize-autoloader"
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v4
@@ -45,3 +37,6 @@ jobs:
         run: |
           docker build -t registry.cn-shanghai.aliyuncs.com/dysh/mirror:${{ env.project }} .
           docker push registry.cn-shanghai.aliyuncs.com/dysh/mirror:${{ env.project }}
+
+      - name: "Trigger deploy webhook"
+        run: curl -s "${{ secrets.DEPLOY_WEBHOOK_URL }}"

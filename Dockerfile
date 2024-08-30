@@ -4,4 +4,8 @@ FROM ghcr.io/joy2fun/docker-php:master
 COPY docker/apache.conf /etc/apache2/sites-enabled/000-default.conf
 COPY --chown=www-data:www-data . .
 
-RUN mv .env.example .env
+RUN curl -o /usr/local/bin/composer https://getcomposer.org/download/latest-stable/composer.phar \
+    && chmod +x /usr/local/bin/composer \
+    && composer install -n --no-dev --no-progress --optimize-autoloader \
+    && composer clear-cache \
+    && mv .env.example .env
