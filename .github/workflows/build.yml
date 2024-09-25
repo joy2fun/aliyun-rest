@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Login to aliyun
         uses: aliyun/acr-login@v1
@@ -36,11 +36,11 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           event-type: deploy
-          repository: joy2fun/deploy
+          repository: joy2fun/ansible
           token: ${{ secrets.PAT }}
           client-payload: |-
             {
               "host": "w1",
               "project": "${{ env.project }}",
-              "type": ""
+              "type": "laravel"
             }
